@@ -8,6 +8,7 @@ from data import load_data
 from model import MPL, LRA
 from evaluate import evaluate
 from optimize import fit
+from src.schedule import optimize_lr_schedule_mpl
 
 
 def main():
@@ -37,7 +38,8 @@ def main():
         model = LRA()
     model.to(device)
     model.train()
-    fit(model, 0.1, train_data, 1000)
+    best_params, best_loss = fit(model, 0.1, train_data, 1000)
+    optimize_lr_schedule_mpl(best_params, 33907, 1e-3, 1e-4, 5e-9, 5000, 2000, "opt")
 
     model.eval()
     if not os.path.exists(args.output):

@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from torch import nn
 
@@ -18,3 +19,7 @@ def evaluate(data: TrainCurve, model: nn.Module, fig_folder: str):
     plt.legend()
     plt.savefig(f"{fig_folder}/{data.name}_fit.png")
     plt.close()
+    err = np.max(np.abs(pred - losses))
+    print(f"|pred-loss|_1 for {data.name}: {err:.4e}")
+    err = np.linalg.norm(pred - losses) / np.linalg.norm(losses)
+    print(f"relative_error for {data.name}: {err:.4e}")
