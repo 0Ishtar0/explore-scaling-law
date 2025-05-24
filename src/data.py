@@ -84,8 +84,8 @@ def load_data(file_path: str, total_steps: int, peak_lr: float,
               lr_type: Literal["cosine", "8-1-1", "wsd", "constant", "step", "lambda"],
               decay_step: Optional[int] = None,
               end_lr: Optional[float] = None,
-              mid_lr: Optional[float] = None, step_size: Optional[int] = None, gamma: Optional[float] = None,
-              lambda_func: Optional[Callable[[int], float]] = None) -> TrainCurve:
+              mid_lr: Optional[float] = None, step_size: Optional[int] = None,
+              gamma: Optional[float] = None) -> TrainCurve:
     data = np.genfromtxt(file_path, delimiter=',', skip_header=1)
     steps = data[:, 0].astype(int) - 1
     losses = data[:, 2].astype(float)
@@ -112,11 +112,11 @@ def load_data(file_path: str, total_steps: int, peak_lr: float,
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     steps = torch.tensor(steps, device=device)
-    losses = torch.tensor(losses, device=device)
-    learning_rates = torch.tensor(learning_rates, device=device)
-    lr_sum = torch.tensor(lr_sum, device=device)
-    S1 = torch.tensor(S1, device=device)
-    lr_gap = torch.tensor(lr_gap, device=device)
+    losses = torch.tensor(losses, device=device, dtype=torch.float32)
+    learning_rates = torch.tensor(learning_rates, device=device, dtype=torch.float32)
+    lr_sum = torch.tensor(lr_sum, device=device, dtype=torch.float32)
+    S1 = torch.tensor(S1, device=device, dtype=torch.float32)
+    lr_gap = torch.tensor(lr_gap, device=device, dtype=torch.float32)
 
     return TrainCurve(name=lr_type, steps=steps, losses=losses, learning_rates=learning_rates, lr_sum=lr_sum, S1=S1,
                       lr_gap=lr_gap, N=int(1e8))
