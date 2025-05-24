@@ -163,3 +163,17 @@ cython_debug/
 .idea/
 out/
 
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.idx
+*.ilg
+*.snm
+*.nav
+*.pdf
+*.out
+*.synctex.gz
+*.toc
+!**/fig/**/*.pdf

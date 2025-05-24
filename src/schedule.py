@@ -22,7 +22,7 @@ def optimize_lr_schedule_mpl(
         data_folder: str = "../data/"
 ):
     L0, A, alpha, B, C, beta, gamma = best_params
-    delta = nn.Parameter(torch.zeros(total_steps - warmup, dtype=torch.float64), requires_grad=True)
+    delta = nn.Parameter(torch.zeros(total_steps - warmup, dtype=torch.float32), requires_grad=True)
     warmup_bias = 0.5 * peak_lr * warmup
     optimizer = torch.optim.Adam([delta], lr=lr)
     for _ in tqdm(range(max_steps), desc="Optimizing LR Schedule"):
@@ -31,7 +31,8 @@ def optimize_lr_schedule_mpl(
         eta = torch.clamp(eta, min=min_lr)
         lr_sum = torch.cumsum(eta, dim=0) + warmup_bias
         lr_sum = torch.concatenate([torch.tensor([0]), lr_sum], dim=0)
-        LD = torch.sum(delta * (1 - (1 + C * eta ** (-gamma) * (lr_sum[-1] - lr_sum[:-1])) ** (-beta)))
+        LD = torch.sum(delta * (1 - (1 + C * eta ** (-gamma) *
+                       (lr_sum[-1] - lr_sum[:-1])) ** (-beta)))
         pred = L0 + A * lr_sum[-1] ** (-alpha) - B * LD
         pred.backward()
         optimizer.step()
