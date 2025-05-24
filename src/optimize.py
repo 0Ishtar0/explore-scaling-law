@@ -10,7 +10,7 @@ def huber(delta: float, r: Tensor) -> Tensor:
     return torch.where(torch.abs(r) < delta, 0.5 * r ** 2, delta * (torch.abs(r) - 0.5 * delta))
 
 
-def log_mse_loss(preds: torch.Tensor, targets: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
+def log_mse_loss(preds: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
     log_preds = torch.log(preds + 1)
     log_targets = torch.log(targets + 1)
     loss = torch.mean((log_preds - log_targets) ** 2)

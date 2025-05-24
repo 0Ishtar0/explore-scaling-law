@@ -16,7 +16,6 @@ class TrainCurve:
     lr_sum: Tensor
     S1: Tensor
     lr_gap: Tensor
-    N: int
 
     def truncate(self, max_steps: int) -> None:
         mask = self.steps < max_steps
@@ -119,4 +118,4 @@ def load_data(file_path: str, total_steps: int, peak_lr: float,
     lr_gap = torch.tensor(lr_gap, device=device, dtype=torch.float32)
 
     return TrainCurve(name=lr_type, steps=steps, losses=losses, learning_rates=learning_rates, lr_sum=lr_sum, S1=S1,
-                      lr_gap=lr_gap, N=int(1e8))
+                      lr_gap=lr_gap)

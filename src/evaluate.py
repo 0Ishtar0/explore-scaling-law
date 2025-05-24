@@ -4,11 +4,17 @@ import torch
 from torch import nn
 
 from data import TrainCurve
+from model import MPL, LRA
 
 
 def evaluate(data: TrainCurve, model: nn.Module, fig_folder: str):
     with torch.no_grad():
-        pred = model(data)
+        if isinstance(model, MPL):
+            pred = model(data)
+        elif isinstance(model, LRA):
+            pred = model.forward_low_mem(data)
+        else:
+            raise ValueError("Unknown model type")
 
     steps = data.steps.cpu().numpy()
     pred = pred.cpu().detach().numpy()

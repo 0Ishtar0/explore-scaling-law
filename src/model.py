@@ -63,14 +63,66 @@ class LRA(nn.Module):
         self.L0 = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
         self.A = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
         self.alpha = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
-        self.B = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
-        self.beta = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
+        self.lambd = 0.99
         self.C = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
-        self.gamma = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
 
     def forward(self, data: TrainCurve):
         S1 = data.S1
-        N = data.N
-        pred = self.L0 + self.A * S1 ** (- self.alpha) + self.B * \
-            N ** (-self.beta) - self.C * N ** (-self.gamma)
+        lrs = data.learning_rates
+        steps = data.steps
+        device = S1.device
+        dtype = S1.dtype
+
+        actual_steps_formula = steps + 1
+
+        max_s_formula = torch.max(actual_steps_formula).item()
+        X_s_values = lrs[:max_s_formula] - lrs[1:max_s_formula + 1]
+        m_arange = torch.arange(max_s_formula, device=device)
+        indices_diff = m_arange.unsqueeze(1) - m_arange.unsqueeze(0)
+        lambda_powers = self.lambd ** indices_diff
+        toeplitz_operator = torch.tril(lambda_powers)
+        current_term_prime_values = toeplitz_operator @ X_s_values
+        s2_contributions = torch.cumsum(current_term_prime_values, dim=0)
+        initial_zero = torch.tensor([0.0], device=device, dtype=dtype)
+        S2_all_s = torch.cat((initial_zero, s2_contributions), dim=0)
+
+        S2 = S2_all_s[actual_steps_formula]
+        S1 = torch.clamp(S1, min=1e-10)
+        term_A = self.A * (S1 ** (-self.alpha))
+        term_C = self.C * S2
+
+        pred = self.L0 + term_A - term_C
+        return pred
+
+    def forward_low_mem(self, data: TrainCurve):
+        S1 = data.S1
+        lrs = data.learning_rates
+
+        device = S1.device
+        dtype = S1.dtype
+
+        actual_steps_formula = data.steps + 1
+        max_s_formula = torch.max(actual_steps_formula).item()
+
+        S2_all_s = torch.zeros(max_s_formula + 1, device=device, dtype=dtype)
+
+        current_term_prime = torch.tensor(0.0, device=device, dtype=dtype)
+
+        if max_s_formula > 0:
+            for s_iter in range(1, max_s_formula + 1):
+                eta_s_minus_1 = lrs[s_iter - 1]
+                eta_s = lrs[s_iter]
+                X_s = eta_s_minus_1 - eta_s
+                current_term_prime = X_s + self.lambd * current_term_prime
+                if s_iter == 1:
+                    S2_all_s[s_iter] = current_term_prime
+                else:
+                    S2_all_s[s_iter] = S2_all_s[s_iter - 1] + current_term_prime
+
+        S2 = S2_all_s[actual_steps_formula]
+        s1_clamped = torch.clamp(S1, min=1e-10)
+        term_A = self.A * (s1_clamped ** (-self.alpha))
+        term_C = self.C * S2
+
+        pred = self.L0 + term_A - term_C
         return pred
