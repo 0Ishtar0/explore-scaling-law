@@ -14,7 +14,7 @@ from schedule import optimize_lr_schedule_mpl
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, default="../data", help="Path to the data directory")
-    parser.add_argument("--model", type=str, default="SPL",
+    parser.add_argument("--model", type=str, default="MPL",
                         choices=["MPL", "LRA", "SPL"], help="Model to use")
     parser.add_argument("--output", type=str, default="../fig", help="Path to the output directory")
     args = parser.parse_args()

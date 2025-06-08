@@ -11,7 +11,7 @@ class MPL(nn.Module):
         self.L0 = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
         self.A = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
         self.alpha = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
-        self.B = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
+        self.B = 80
         self.C = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
         self.beta = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
         self.gamma = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
