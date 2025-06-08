@@ -128,7 +128,7 @@ class LRA(nn.Module):
         return pred
 
 
-class _MPL(nn.Module):
+class SPL(nn.Module):
 
     def __init__(self):
         super().__init__()
@@ -143,7 +143,6 @@ class _MPL(nn.Module):
     def forward(self, data: TrainCurve):
         S1 = data.S1
         lrs = data.learning_rates
-        lr_sum = data.lr_sum
         step = data.steps
         lr_gap = data.lr_gap
         device = lrs.device
@@ -159,18 +158,9 @@ class _MPL(nn.Module):
             else:
                 k_indices = torch.arange(1, max_s_val_in_batch.item() + 1,
                                          device=device, dtype=torch.long)
-                lrs_k = lrs[k_indices]
                 lr_gap_k = lr_gap[k_indices]
-                lr_sum_k_minus_1 = lr_sum[k_indices - 1]
                 s_values = step.unsqueeze(1)
-                lr_sum_at_s = lr_sum[step].unsqueeze(1)
-                delta_lr_sum = lr_sum_at_s - lr_sum_k_minus_1.unsqueeze(0)
 
-                term_C_lrs_delta = self.C * (lrs_k.unsqueeze(0) ** (-self.gamma)) * delta_lr_sum
-                base_pow = 1 + term_C_lrs_delta
-                clamped_base_pow = torch.clamp(base_pow, min=1e-10)
-                powered_term = clamped_base_pow ** (-self.beta)
-                # summand = lr_gap_k.unsqueeze(0) * (1 - powered_term)
                 # SPL
                 summand = lr_gap_k.unsqueeze(0)
                 mask = k_indices.unsqueeze(0) <= s_values

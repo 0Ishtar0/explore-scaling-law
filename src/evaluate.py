@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 from data import TrainCurve
-from model import MPL, LRA, _MPL
+from model import MPL, LRA, SPL
 
 
 def evaluate(data: TrainCurve, model: nn.Module, fig_folder: str):
@@ -13,7 +13,7 @@ def evaluate(data: TrainCurve, model: nn.Module, fig_folder: str):
             pred = model(data)
         elif isinstance(model, LRA):
             pred = model.forward_low_mem(data)
-        elif isinstance(model, _MPL):
+        elif isinstance(model, SPL):
             pred = model(data)
         else:
             raise ValueError("Unknown model type")
