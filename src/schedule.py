@@ -32,7 +32,7 @@ def optimize_lr_schedule_mpl(
         lr_sum = torch.cumsum(eta, dim=0) + warmup_bias
         lr_sum = torch.concatenate([torch.tensor([0]), lr_sum], dim=0)
         LD = torch.sum(delta * (1 - (1 + C * eta ** (-gamma) *
-                       (lr_sum[-1] - lr_sum[:-1])) ** (-beta)))
+                                     (lr_sum[-1] - lr_sum[:-1])) ** (-beta)))
         pred = L0 + A * lr_sum[-1] ** (-alpha) - B * LD
         pred.backward()
         optimizer.step()
@@ -57,6 +57,6 @@ def optimize_lr_schedule_mpl(
     plt.xlabel("Step")
     plt.ylabel("Learning Rate")
     plt.title(f"Optimized Learning Rate Schedule ({name})")
-    plt.savefig(os.path.join(fig_folder, f"{name}.png"))
+    plt.savefig(os.path.join(fig_folder, f"{name}.pdf"))
     plt.close()
     return opt_lr

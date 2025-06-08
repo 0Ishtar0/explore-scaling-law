@@ -5,7 +5,7 @@ from copy import deepcopy
 import torch
 
 from data import load_data
-from model import MPL, LRA
+from model import MPL, LRA, _MPL
 from evaluate import evaluate
 from optimize import fit
 from schedule import optimize_lr_schedule_mpl
@@ -14,8 +14,8 @@ from schedule import optimize_lr_schedule_mpl
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, default="../data", help="Path to the data directory")
-    parser.add_argument("--model", type=str, default="MPL",
-                        choices=["MPL", "LRA"], help="Model to use")
+    parser.add_argument("--model", type=str, default="_MPL",
+                        choices=["MPL", "LRA", "_MPL"], help="Model to use")
     parser.add_argument("--output", type=str, default="../fig", help="Path to the output directory")
     args = parser.parse_args()
 
@@ -31,11 +31,13 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if args.model == "MPL":
         model = MPL()
+    elif args.model == "_MPL":
+        model = _MPL()
     else:
         model = LRA()
     model = model.to(device)
     model.train()
-    best_params, _ = fit(model, 0.1, train_data, 5000)
+    best_params, _ = fit(model, 0.1, train_data, 20000)
     print(best_params)
     # if args.model == "MPL":
     #     optimize_lr_schedule_mpl(best_params, 33907, 1e-3, 1e-4, 5e-9, 5000, 2000, "opt")

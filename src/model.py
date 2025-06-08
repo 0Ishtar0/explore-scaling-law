@@ -135,10 +135,10 @@ class _MPL(nn.Module):
         self.L0 = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
         self.A = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
         self.alpha = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
-        self.B = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
-        self.C = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
-        self.beta = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
-        self.gamma = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
+        self.B = 80
+        self.C = 1
+        self.beta = 1
+        self.gamma = 1
 
     def forward(self, data: TrainCurve):
         S1 = data.S1
@@ -166,11 +166,13 @@ class _MPL(nn.Module):
                 lr_sum_at_s = lr_sum[step].unsqueeze(1)
                 delta_lr_sum = lr_sum_at_s - lr_sum_k_minus_1.unsqueeze(0)
 
-                term_C_lrs_delta = self.C * (lrs_k.unsqueeze(0) ** (0)) * delta_lr_sum
-                base_pow = term_C_lrs_delta
+                term_C_lrs_delta = self.C * (lrs_k.unsqueeze(0) ** (-self.gamma)) * delta_lr_sum
+                base_pow = 1 + term_C_lrs_delta
                 clamped_base_pow = torch.clamp(base_pow, min=1e-10)
-                powered_term = torch.exp(-clamped_base_pow)
-                summand = lr_gap_k.unsqueeze(0) * (1 - powered_term)
+                powered_term = clamped_base_pow ** (-self.beta)
+                # summand = lr_gap_k.unsqueeze(0) * (1 - powered_term)
+                # SPL
+                summand = lr_gap_k.unsqueeze(0)
                 mask = k_indices.unsqueeze(0) <= s_values
                 masked_summand = summand * mask
 

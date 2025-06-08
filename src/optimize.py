@@ -2,6 +2,7 @@ import torch
 from torch import nn, Tensor
 from torch import optim
 from tqdm import tqdm
+from viztracer import VizTracer
 
 from data import TrainCurve
 
@@ -25,12 +26,13 @@ def compute_loss(model: nn.Module, data: TrainCurve) -> Tensor:
 
 
 def fit(model: nn.Module, lr: float, data: TrainCurve, max_steps: int) -> tuple[list[float], float]:
-    optimizer = optim.SGD(model.parameters(), lr=lr)
+    optimizer = torch.optim.SGD(params=model.parameters(), lr=lr)
     best_params = None
     best_loss = float('inf')
 
     for _ in tqdm(range(max_steps)):
         optimizer.zero_grad()
+        # with VizTracer(log_torch=True):
         loss = compute_loss(model, data)
         loss.backward()
         optimizer.step()
